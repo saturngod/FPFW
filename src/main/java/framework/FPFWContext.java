@@ -39,18 +39,21 @@ public class FPFWContext {
 
     private void injectValueField(Object instance, Field field) throws IllegalAccessException {
         Annotation[] annotations = field.getAnnotations();
-        for (Annotation annotation : annotations) {
-            if(annotation.annotationType().getName().equals(Value.class.getName())) {
-                Value injectValue = (Value) annotation;
-                String value = injectValue.value();
-                if(isValueReadFromProperties(injectValue.value())) {
-                    value = readFromProperties(injectValue.value());
-                }
 
-                setField(field,instance,value);
-
-            }
+        FPFWAnnotationScanner scanner = new FPFWAnnotationScanner();
+        Annotation annotation = scanner.findAnnotation(field,Value.class);
+        if(annotation == null) {
+            return;
         }
+
+        Value injectValue = (Value) annotation;
+        String value = injectValue.value();
+        if(isValueReadFromProperties(injectValue.value())) {
+            value = readFromProperties(injectValue.value());
+        }
+
+        setField(field,instance,value);
+
     }
 
     private boolean isValueReadFromProperties(String value) {
