@@ -1,13 +1,13 @@
 ## Supported Annotations
 
-@Async
-@AutoWire
-@EventListner
-@Profile
-@Qualifier
-@Scheduled
-@Service
-@Value
+- @Async
+- @AutoWire
+- @EventListner
+- @Profile
+- @Qualifier
+- @Scheduled
+- @Service
+- @Value
 
 ## Setup Application
 
