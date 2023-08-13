@@ -28,23 +28,7 @@ class FPFWMethod {
                             Scheduled scheduled = (Scheduled)annotation;
 
                             if(!scheduled.cron().isEmpty()) {
-                                String[] timeData = scheduled.cron().split(" ");
-                                if(timeData.length == 2) {
-                                    try {
-                                        int second = Integer.parseInt(timeData[0]);
-                                        int minute = Integer.parseInt(timeData[1]);
-
-                                        if(second < 60 && minute < 60) {
-                                            int totalSecond = second + (minute * 60);
-                                            Timer timer = new Timer();
-                                            TimerTask task = getTimerTask(serviceObject, method);
-                                            timer.schedule(task,totalSecond * 1000);
-                                        }
-                                    }
-                                    catch (Exception e) {
-                                        throw e;
-                                    }
-                                }
+                                cronJob(serviceObject, method, scheduled);
                             }
                             else {
                                 workingAsTimer(serviceObject, method, scheduled);
@@ -55,6 +39,26 @@ class FPFWMethod {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    private static void cronJob(Object serviceObject, Method method, Scheduled scheduled) {
+        String[] timeData = scheduled.cron().split(" ");
+        if(timeData.length == 2) {
+            try {
+                int second = Integer.parseInt(timeData[0]);
+                int minute = Integer.parseInt(timeData[1]);
+
+                if(second < 60 && minute < 60) {
+                    int totalSecond = second + (minute * 60);
+                    Timer timer = new Timer();
+                    TimerTask task = getTimerTask(serviceObject, method);
+                    timer.schedule(task,totalSecond * 1000);
+                }
+            }
+            catch (Exception e) {
+                throw e;
             }
         }
     }
