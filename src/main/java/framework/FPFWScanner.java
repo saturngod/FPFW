@@ -1,6 +1,5 @@
 package framework;
 
-import framework.annotations.Aspect;
 import framework.annotations.AutoWire;
 import framework.annotations.Profile;
 import framework.annotations.Service;
@@ -23,14 +22,6 @@ class FPFWScanner {
         this.serviceObjectList = serviceObjectList;
         this.properties = properties;
     }
-
-    protected void scanAndInstantiateAspectClass(Reflections reflections,List<Object> aspectList) throws InstantiationException, IllegalAccessException {
-        Set<Class<?>> aspectType = reflections.getTypesAnnotatedWith(Aspect.class);
-        for (Class<?> aspect : aspectType) {
-            aspectList.add((Object) aspect.newInstance());
-        }
-    }
-
     protected void scanAndInstantiateServiceClasses(Reflections reflections) throws InstantiationException, IllegalAccessException, InvocationTargetException {
         Set<Class<?>> serviceTypes = reflections.getTypesAnnotatedWith(Service.class);
         for (Class<?> serviceClass : serviceTypes) {
@@ -113,7 +104,5 @@ class FPFWScanner {
             serviceObjectList.add(constructor.newInstance(arguments));
         }
     }
-
-
 
 }

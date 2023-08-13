@@ -1,6 +1,7 @@
 package framework.classes;
 
 import framework.annotations.Async;
+import framework.annotations.EnableAsync;
 import framework.annotations.EventListner;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,23 +41,29 @@ public class FPFWEventPublisher {
         if (contextClass.getName().equals(object.getClass().getName()) &&
                 method.isAnnotationPresent(EventListner.class)) {
             if(method.isAnnotationPresent(Async.class)) {
-                CompletableFuture.runAsync(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            method.invoke(serviceObject, object);
-                        } catch (IllegalAccessException e) {
-                            throw new RuntimeException(e);
-                        } catch (InvocationTargetException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                });
+                if(serviceObject.getClass().isAnnotationPresent(EnableAsync.class)) {
+                    runAsAsync(object, serviceObject, method);
+                }
             }
             else {
                 method.invoke(serviceObject, object);
             }
         }
 
+    }
+
+    private static void runAsAsync(Object object, Object serviceObject, Method method) {
+        CompletableFuture.runAsync(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    method.invoke(serviceObject, object);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                } catch (InvocationTargetException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 }

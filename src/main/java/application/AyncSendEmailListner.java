@@ -1,10 +1,12 @@
 package application;
 
 import framework.annotations.Async;
+import framework.annotations.EnableAsync;
 import framework.annotations.EventListner;
 import framework.annotations.Service;
 
 @Service
+@EnableAsync
 public class AyncSendEmailListner {
     @Async
     @EventListner

@@ -1,5 +1,6 @@
 package application;
 
+import framework.annotations.EnableAsync;
 import framework.annotations.EventListner;
 import framework.annotations.Service;
 
