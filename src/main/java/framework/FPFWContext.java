@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -17,9 +18,12 @@ import java.util.Set;
 public class FPFWContext {
 
     private List<Object> serviceObjectList = new ArrayList<>();
+    private List<Object> aspectObjectList = new ArrayList<>();
+    private List<FPFWAspectData> aspectDataList = new ArrayList<>();
 
     private Properties properties;
     private FPFWEventPublisher publisher;
+
 
     protected void injectFields(Object instance) throws IllegalAccessException {
         for (Field field : instance.getClass().getDeclaredFields()) {
@@ -66,7 +70,6 @@ public class FPFWContext {
             return "";
         }
 
-
         String propertyName = value.substring(2, value.length() - 1);
         String propertyValue = properties.getProperty(propertyName);
 
@@ -84,10 +87,6 @@ public class FPFWContext {
             }
         }
     }
-
-
-
-
 
     private Object getServiceFromContainer(Class fieldClass,String name) {
         Object service = null;
@@ -160,7 +159,12 @@ public class FPFWContext {
             loadProperties(clazz);
             Reflections reflections = new Reflections(clazz.getPackageName());
 
+
             FPFWScanner scanner = new FPFWScanner(this,serviceObjectList,properties);
+            scanner.scanAndInstantiateAspectClass(reflections,aspectObjectList);
+
+            performAspectDataBuilder();
+
             scanner.scanAndInstantiateServiceClasses(reflections);
 
             FPFWDI di = new FPFWDI(this,serviceObjectList);
@@ -168,6 +172,8 @@ public class FPFWContext {
 
 
             publisher.setServiceObjectList(serviceObjectList);
+
+
 
             FPFWMethod fpfwMethod = new FPFWMethod(serviceObjectList);
             fpfwMethod.scanSchedule();
@@ -178,6 +184,27 @@ public class FPFWContext {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void performAspectDataBuilder() {
+        FPFWAnnotationScanner scanner = new FPFWAnnotationScanner();
+        for (Object aspectObject: aspectObjectList) {
+            Method[] methods = aspectObject.getClass().getDeclaredMethods();
+            for (Method method: methods) {
+                Annotation afterClass = scanner.findAnnotation(method, After.class);
+                if(afterClass != null) {
+                    After afterClassAnnotation = (After)afterClass;
+                    String value = afterClassAnnotation.pointcut();
+                    String[] str = value.split(".");
+                    if(str.length == 2) {
+                        String className = str[0];
+                        String methodName = str[1];
+                        FPFWAspectData aspectData = new FPFWAspectData(className,methodName,FPFWAspectDataType.AFTER);
+                        aspectDataList.add(aspectData);
+                    }
+                }
+            }
         }
     }
 
