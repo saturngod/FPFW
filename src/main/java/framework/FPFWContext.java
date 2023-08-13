@@ -28,7 +28,8 @@ public class FPFWContext {
                     injectFieldWithQualifier(instance, field);
                 }
                 else {
-                    injectFieldWithoutQualifier(instance, field);
+                    FPFWInjector injector = new FPFWInjector(this);
+                    injector.injectFieldWithoutQualifier(instance, field);
                 }
             }
             else if(field.isAnnotationPresent(Value.class)) {
@@ -51,8 +52,8 @@ public class FPFWContext {
         if(isValueReadFromProperties(injectValue.value())) {
             value = readFromProperties(injectValue.value());
         }
-
-        setField(field,instance,value);
+        FPFWInjector injector = new FPFWInjector(this);
+        injector.setField(field,instance,value);
 
     }
 
@@ -78,27 +79,14 @@ public class FPFWContext {
 
             if(annotation.annotationType().getName().equals(Qualifier.class.getName())) {
                 Qualifier q = (Qualifier)annotation;
-
-                injectField(instance, field,q.value());
+                FPFWInjector injector = new FPFWInjector(this);
+                injector.injectField(instance, field,q.value());
             }
         }
     }
 
 
-    private void injectField(Object instance, Field field, String name) throws IllegalAccessException {
-        Class<?> fieldType = field.getType();
-        Object fieldInstance = getServiceBeanOfType(fieldType,name);
-        setField(field, instance, fieldInstance);
-    }
 
-    private void injectFieldWithoutQualifier(Object instance, Field field) throws IllegalAccessException {
-        injectField(instance,field,"");
-    }
-
-    private void setField(Field field,Object instance,Object fieldInstance) throws IllegalAccessException {
-        field.setAccessible(true);
-        field.set(instance, fieldInstance);
-    }
 
 
     private Object getServiceFromContainer(Class fieldClass,String name) {
@@ -120,9 +108,10 @@ public class FPFWContext {
     }
 
     protected Object getServiceBeanOfType(Class fieldClass) {
+
         return getServiceBeanOfType(fieldClass,"");
     }
-    private Object getServiceBeanOfType(Class fieldClass,String name) {
+    protected Object getServiceBeanOfType(Class fieldClass,String name) {
         Object service = null;
         try {
             service = getServiceFromContainer(fieldClass, name);
